@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Memento Mori</title>
+    <style>
+        /* Базовые настройки сайта */
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #000;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            perspective: 1000px; 
+            user-select: none; 
+        }
+
+        #scene {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transform-style: preserve-3d;
+        }
+
+        #cube {
+            position: relative;
+            width: 280px;
+            height: 280px;
+            transform-style: preserve-3d;
+            transition: transform 0.1s linear, width 0.3s, height 0.3s; 
+        }
+
+        /* Жесткая структура каждой грани */
+        .face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            box-sizing: border-box;
+            border: 12px solid; 
+            box-shadow: inset 0 0 15px rgba(0,0,0,0.6);
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden; 
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Зона текста (Scroll) */
+        .content {
+            flex-grow: 1;
+            padding: 15px; 
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch; 
+            font-size: 14px;
+            line-height: 1.6;
+            outline: none;
+            word-break: break-word;
+            user-select: text; 
+            
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+        }
+
+        /* МАГИЯ ПРИЛИПАЮЩЕГО ЗАГОЛОВКА */
+        .content h3 {
+            margin: -15px -15px 10px -15px; 
+            padding: 2px 2px 2px 2px;
+            font-size: 16px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            
+            position: sticky;
+            top: -15px; /* Убираем отступ сверху, компенсируя padding контейнера */
+            z-index: 10;
+            background: inherit; 
+        }
+
+        /* === ЦВЕТОВЫЕ ТЕМЫ === */
+        .theme-gold { background: #1a1303; border-color: #0a1c11; } 
+        .theme-gold h3 { color: #d49d1e; border-bottom: 2px solid #8c6814; }
+        .theme-gold b { color: #d49d1e; }
+
+        .theme-green { background: #05140b; border-color: #165c32; }
+        .theme-green h3 { color: #23a355; border-bottom: 2px solid #165c32; }
+        .theme-green b { color: #23a355; }
+
+        .theme-future { background: #082112; border-color: #238c4b; }
+        .theme-future h3 { color: #35cc6e; border-bottom: 2px solid #238c4b; }
+        .theme-future b { color: #35cc6e; }
+
+        .theme-past { background: #1a0508; border-color: #751421; }
+        .theme-past h3 { color: #bf2237; border-bottom: 2px solid #751421; }
+        .theme-past b { color: #bf2237; }
+
+        .content i { color: #888; } 
+
+        /* Скроллбары для Chrome/Safari */
+        .content::-webkit-scrollbar { width: 6px; background-color: transparent; }
+        .content::-webkit-scrollbar-track { background: transparent; }
+        .content::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.3); border-radius: 3px; }
+
+        /* Расстановка 6 граней в 3D */
+        .front  { transform: translateZ(140px); }
+        .back   { transform: rotateY(180deg) translateZ(140px); }
+        .right  { transform: rotateY(90deg) translateZ(140px); }
+        .left   { transform: rotateY(-90deg) translateZ(140px); }
+        .top    { transform: rotateX(90deg) translateZ(140px); }
+        .bottom { transform: rotateX(-90deg) translateZ(140px); }
+        
+        #hint {
+            position: absolute;
+            bottom: 20px;
+            left: 0;
+            width: 100%;
+            color: #666;
+            font-size: 13px;
+            pointer-events: none;
+            text-align: center;
+            letter-spacing: 0.5px;
+        }
+
+        /* Адаптив для маленьких экранов */
+        @media (max-width: 340px) {
+            #cube { width: 240px; height: 240px; }
+            .front  { transform: translateZ(120px); }
+            .back   { transform: rotateY(180deg) translateZ(120px); }
+            .right  { transform: rotateY(90deg) translateZ(120px); }
+            .left   { transform: rotateY(-90deg) translateZ(120px); }
+            .top    { transform: rotateX(90deg) translateZ(120px); }
+            .bottom { transform: rotateX(-90deg) translateZ(120px); }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="scene">
+        <div id="cube">
+            <div class="face front theme-gold" data-id="1">
+                <div class="content" contenteditable="true">
+                    <h3>0-15 ЛЕТ</h3>
+                    ЗАВИСИМОСТЬ Ты спал. Твое «я» лепилось чужими руками. Нет свободы воли, ты впитываешь среду и правила. Не вини прошлое — у тебя просто не было пульта управления.<br><br>
+                    <b>0-3 лет Пустота:</b> Период инфантильной амнезии.<br>
+                    — <i>[твои воспоминания...]</i><br><br>
+                    <b>4-7 лет Тотальный контроль:</b> Иллюзия беззаботности. Тебе диктуют всё.<br>
+                    — <i>[твои воспоминания...]</i><br><br>
+                    <b>8-11 лет Обязаловка в школе:</b> Тебя помещают в систему.<br>
+                    — <i>[твои воспоминания...]</i><br><br>
+                    <b>12-15 лет Мы не принадлежим:</b> К 15 годам твоя картина мира сформирована, но ты не принимал в этом участия.
+                </div>
+            </div>
+            
+            <div class="face right theme-green" data-id="2">
+                <div class="content" contenteditable="true">
+                    <h3>15-33 ЛЕТ</h3>
+                    ИЛЛЮЗИЯ ВРЕМЕНИ Ты проснулся, опьяненный энергией. Иллюзия бесконечного ресурса и резинового времени. Ошибки здесь кажутся бесплатными.<br><br>
+                    <b>15-20 лет Поиск себя:</b> Выбор пути вслепую, максимализм.<br>
+                    — <i>[твои заметки...]</i><br><br>
+                    <b>21-25 лет Реальность:</b> Работа 5/2, независимость, первые деньги.<br>
+                    — <i>[твои заметки...]</i><br><br>
+                    <b>26-30 лет Гонка за статусом:</b> Ипотека, карьера, формирование рутины.<br>
+                    — <i>[твои заметки...]</i><br><br>
+                    <b>31-35 лет Автопилот:</b> Энергии еще много, но время начинает лететь.
+                </div>
+            </div>
+            
+            <div class="face back theme-green" data-id="3">
+                <div class="content" contenteditable="true">
+                    <h3>33-60 ЛЕТ</h3>
+                    РУТИНА И СПАД Экватор. Иллюзий больше нет. Привычки тянут на дно, но это последнее окно возможностей с активным ресурсом, чтобы сломать сценарий.<br><br>
+                    <b>36-40 лет Кризис смыслов:</b> Сверка ожиданий и суровой реальности.<br>
+                    — <i>[твои заметки...]</i><br><br>
+                    <b>41-45 лет Пик нагрузки:</b> Риск выгорания, удержание уровня жизни.<br>
+                    — <i>[твои заметки...]</i><br><br>
+                    <b>46-50 лет Счета за молодость:</b> Здоровье начинает диктовать правила.<br>
+                    — <i>[твои заметки...]</i><br><br>
+                    <b>51-60 лет Энергосбережение:</b> Огонь амбиций сменяется жаждой покоя.
+                </div>
+            </div>
+            
+            <div class="face left theme-gold" data-id="4">
+                <div class="content" contenteditable="true">
+                    <h3>60+ ЛЕТ</h3>
+                    ПРЕДЕЛ Триумф биологии над волей. Касса, где оплачиваются счета за образ жизни. Свобода сжимается до запаса физических сил.<br><br>
+                    <b>60-65 лет Хроника:</b> Медицинская карта важнее амбициозных планов.<br>
+                    — <i>[твои заметки...]</i><br><br>
+                    <b>66-75 лет Сужение мира:</b> Суставы и сердце диктуют твои маршруты.<br>
+                    — <i>[твои заметки...]</i><br><br>
+                    <b>76-85 лет Возврат к истокам:</b> Снова зависимость от чужой помощи.<br>
+                    — <i>[твои заметки...]</i><br><br>
+                    <b>85+ лет Наблюдатель:</b> Роль главного героя окончена, ждешь занавеса.
+                </div>
+            </div>
+            
+            <div class="face top theme-future" data-id="top">
+                <div class="content" contenteditable="true">
+                    <h3>БУДУЩЕЕ</h3>
+                    Пластичная материя. Оно формируется из решений этой секунды. Ждать мотивации — воровать время у самого себя. Будущее принадлежит тем, кто осознал свой предел.<br><br>
+                    <b>Мои решения и планы:</b><br>
+                    — <i>[писать здесь...]</i>
+                </div>
+            </div>
+            
+            <div class="face bottom theme-past" data-id="bottom">
+                <div class="content" contenteditable="true">
+                    <h3>ПРОШЛОЕ</h3>
+                    Мертвый фундамент. Залит бетоном. Жевать обиды — значит пытаться изменить неизменяемое. Возьми сухой остаток опыта и закрой эту дверь.<br><br>
+                    <b>Выводы и отпущенное:</b><br>
+                    — <i>[писать здесь...]</i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="hint">Memento Mori</div>
+
+    <script>
+        const cube = document.getElementById('cube');
+        const contents = document.querySelectorAll('.content');
+        
+        let isDragging = false;
+        let startX, startY;
+        let rotX = -15, rotY = 25;
+        let scale = 1;
+        let baseTextLength = 0;
+
+        const facesData = [
+            { el: document.querySelector('.front'),  vx: 0,  vy: 0,  vz: 1  },
+            { el: document.querySelector('.back'),   vx: 0,  vy: 0,  vz: -1 },
+            { el: document.querySelector('.right'),  vx: 1,  vy: 0,  vz: 0  },
+            { el: document.querySelector('.left'),   vx: -1, vy: 0,  vz: 0  },
+            { el: document.querySelector('.top'),    vx: 0,  vy: -1, vz: 0  },
+            { el: document.querySelector('.bottom'), vx: 0,  vy: 1,  vz: 0  }
+        ];
+
+        const getLength = () => Array.from(contents).reduce((acc, el) => acc + el.innerText.length, 0);
+
+        contents.forEach(content => {
+            const faceId = content.parentElement.getAttribute('data-id');
+            const savedText = localStorage.getItem('cube_data_' + faceId);
+            if (savedText !== null && savedText.trim() !== "") {
+                content.innerHTML = savedText; 
+            }
+        });
+
+        baseTextLength = getLength();
+
+        function updateCube() {
+            cube.style.transform = `rotateX(${rotX}deg) rotateY(${rotY}deg) scale(${scale})`;
+
+            const rx = rotX * Math.PI / 180;
+            const ry = rotY * Math.PI / 180;
+            const sinX = Math.sin(rx), cosX = Math.cos(rx);
+            const sinY = Math.sin(ry), cosY = Math.cos(ry);
+
+            facesData.forEach(face => {
+                const z2 = face.vy * sinX + (-face.vx * sinY + face.vz * cosY) * cosX;
+                face.el.style.zIndex = Math.round((z2 + 1) * 100);
+                
+                if (z2 < 0.1) {
+                    face.el.style.pointerEvents = 'none';
+                } else {
+                    face.el.style.pointerEvents = 'auto';
+                }
+            });
+        }
+
+        contents.forEach(content => {
+            content.addEventListener('input', () => {
+                const faceId = content.parentElement.getAttribute('data-id');
+                localStorage.setItem('cube_data_' + faceId, content.innerHTML);
+                
+                let diff = getLength() - baseTextLength;
+                if (diff < 0) diff = 0;
+                scale = 1 + (diff / 100000); 
+                updateCube();
+            });
+        });
+
+        const handleStart = (e) => {
+            if(e.target.closest('.content')) return; 
+            isDragging = true;
+            startX = e.touches ? e.touches[0].clientX : e.clientX;
+            startY = e.touches ? e.touches[0].clientY : e.clientY;
+        };
+        
+        const handleMove = (e) => {
+            if (!isDragging) return;
+            e.preventDefault(); 
+            
+            let currentX = e.touches ? e.touches[0].clientX : e.clientX;
+            let currentY = e.touches ? e.touches[0].clientY : e.clientY;
+            
+            rotY += (currentX - startX) * 0.3;
+            rotX -= (currentY - startY) * 0.3;
+            
+            startX = currentX;
+            startY = currentY;
+            updateCube();
+        };
+
+        const handleEnd = () => { isDragging = false; };
+
+        document.addEventListener('touchstart', handleStart, {passive: false});
+        document.addEventListener('touchmove', handleMove, {passive: false});
+        document.addEventListener('touchend', handleEnd);
+
+        document.addEventListener('mousedown', handleStart);
+        document.addEventListener('mousemove', handleMove);
+        document.addEventListener('mouseup', handleEnd);
+
+        updateCube();
+    </script>
+</body>
+</html>
