@@ -16,4 +16,4 @@
 
 Хватит откладывать себя на завтра. Зайди, выгрузи мысли и посмотри правде в глаза.
 
-👉 **[ОТКРЫТЬ MEMENTO MORI](https://ottogodprim.github.io/Memento.Mori/)**
+👉 **[ОТКРЫТЬ MEMENTO MORI](https://aivrf.github.io/Memento.Mori/)**
